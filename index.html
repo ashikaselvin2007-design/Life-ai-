@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life AI V3</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f3ff;color:#171525}
+.app{max-width:540px;margin:auto;min-height:100vh;background:#fff}
+header{padding:22px;background:linear-gradient(135deg,#6d28d9,#9333ea);color:#fff;border-radius:0 0 24px 24px}
+h1{margin:0 0 6px}.muted{opacity:.85}
+main{padding:16px 16px 90px}.screen{display:none}.screen.active{display:block}
+.card{background:#f7f5ff;padding:16px;border-radius:18px;margin:12px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+button{border:0;border-radius:14px;padding:13px 14px;font-weight:700;cursor:pointer;background:#6d28d9;color:white}
+.secondary{background:#ede9fe;color:#4c1d95}.danger{background:#fee2e2;color:#991b1b}
+textarea,input{width:100%;padding:13px;border:1px solid #ddd6fe;border-radius:14px;font-size:15px;margin:8px 0}
+.chatbox{min-height:280px;max-height:55vh;overflow:auto;padding:6px}
+.msg{padding:11px 13px;border-radius:15px;margin:8px 0;max-width:88%;white-space:pre-wrap}
+.user{background:#ede9fe;margin-left:auto}.bot{background:#f3f4f6}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(540px,100%);display:grid;grid-template-columns:repeat(5,1fr);background:#fff;border-top:1px solid #ddd;padding:8px}
+.nav button{background:transparent;color:#555;padding:9px 3px;font-size:11px}.nav button.active{color:#6d28d9}
+#preview{max-width:100%;border-radius:16px;margin-top:10px;display:none}
+.small{font-size:13px;color:#666}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>Life AI ✨</h1><div class="muted">Your everyday AI companion</div></header>
+
+<main>
+<section id="home" class="screen active">
+<h2>What do you need?</h2>
+<div class="grid">
+<button onclick="show('chat')">🤖<br>AI Chat</button>
+<button onclick="show('study')">📚<br>Study AI</button>
+<button onclick="show('photo')">🖼️<br>Photo AI</button>
+<button onclick="show('tools')">🛠️<br>AI Tools</button>
+</div>
+<div class="card"><b>V3</b><p>Real AI connection is ready through a secure backend. Add your backend URL in Settings.</p></div>
+</section>
+
+<section id="chat" class="screen">
+<div class="row"><h2>AI Chat</h2><button class="secondary" onclick="clearChat()">Clear</button></div>
+<div id="chatbox" class="chatbox"></div>
+<div class="row"><input id="chatInput" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')sendChat()"><button onclick="sendChat()">Send</button></div>
+<p class="small">The app sends your message to your own secure backend.</p>
+</section>
+
+<section id="study" class="screen">
+<h2>Study AI 📚</h2>
+<textarea id="studyInput" rows="5" placeholder="Enter your question..."></textarea>
+<div class="grid">
+<button onclick="study('Simple')">Simple</button><button onclick="study('2 Mark')">2 Mark</button>
+<button onclick="study('5 Mark')">5 Mark</button><button onclick="study('10 Mark')">10 Mark</button>
+<button onclick="study('16 Mark')">16 Mark</button><button onclick="study('Step by Step')">Step by Step</button>
+</div>
+<div id="studyOut" class="card">Your AI answer will appear here.</div>
+</section>
+
+<section id="photo" class="screen">
+<h2>Photo AI 🖼️</h2>
+<input type="file" accept="image/*" onchange="preview(this)">
+<img id="preview">
+<div class="grid">
+<button onclick="photo('Enhance')">Enhance</button><button onclick="photo('Background')">Background</button>
+<button onclick="photo('Remove Object')">Remove Object</button><button onclick="photo('Lighting')">Lighting</button>
+<button onclick="photo('Blur')">Blur</button><button onclick="photo('Creative')">Creative</button>
+</div>
+<div class="card small">Real AI image editing can be connected to a separate image service later.</div>
+</section>
+
+<section id="tools" class="screen">
+<h2>AI Tools 🛠️</h2>
+<div class="grid">
+<button onclick="tool('Translator')">Translator</button><button onclick="tool('Summarizer')">Summarizer</button>
+<button onclick="tool('Rewriter')">Rewriter</button><button onclick="tool('Grammar Fixer')">Grammar</button>
+<button onclick="tool('Text to Speech')">TTS</button><button onclick="tool('Image to Text')">Image → Text</button>
+<button onclick="tool('QR Scanner')">QR Scanner</button><button onclick="calculator()">Calculator</button>
+</div>
+</section>
+
+<section id="settings" class="screen">
+<h2>Settings ⚙️</h2>
+<div class="card">
+<label>Backend URL</label>
+<input id="backendUrl" placeholder="https://your-backend.example.com">
+<button onclick="saveBackend()">Save Backend URL</button>
+<p class="small">Keep API keys on the backend. Never put an API key in this page.</p>
+</div>
+<div class="card"><b>About Life AI</b><p>Chat, study help, photo tools and everyday AI utilities in one app.</p></div>
+</section>
+</main>
+
+<nav class="nav">
+<button onclick="show('home')">⌂<br>Home</button>
+<button onclick="show('chat')">🤖<br>Chat</button>
+<button onclick="show('study')">📚<br>Study</button>
+<button onclick="show('photo')">🖼️<br>Photo</button>
+<button onclick="show('settings')">⚙️<br>Settings</button>
+</nav>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let messages=JSON.parse(localStorage.getItem('lifeai_chat')||'[]');
+$('backendUrl').value=localStorage.getItem('lifeai_backend')||'';
+
+function show(id){
+ document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+ $(id).classList.add('active'); renderChat();
+}
+function renderChat(){
+ $('chatbox').innerHTML=messages.map(m=>`<div class="msg ${m.role==='user'?'user':'bot'}">${escapeHtml(m.text)}</div>`).join('');
+ $('chatbox').scrollTop=$('chatbox').scrollHeight;
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function clearChat(){messages=[];localStorage.removeItem('lifeai_chat');renderChat();}
+async function sendChat(){
+ const text=$('chatInput').value.trim(); if(!text)return;
+ messages.push({role:'user',text}); $('chatInput').value=''; renderChat();
+ const base=localStorage.getItem('lifeai_backend');
+ if(!base){messages.push({role:'assistant',text:'Backend URL is not set. Open Settings and add your secure backend URL.'});renderChat();return;}
+ messages.push({role:'assistant',text:'Thinking...'});renderChat();
+ try{
+   const r=await fetch(base.replace(/\/$/,'')+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})});
+   const data=await r.json(); messages.pop();
+   messages.push({role:'assistant',text:data.reply||data.error||'No response received.'});
+ }catch(e){messages.pop();messages.push({role:'assistant',text:'Could not connect to the backend. Check the URL and server.'});}
+ localStorage.setItem('lifeai_chat',JSON.stringify(messages));renderChat();
+}
+async function study(format){
+ const q=$('studyInput').value.trim(); if(!q){$('studyOut').textContent='Enter a question first.';return;}
+ const base=localStorage.getItem('lifeai_backend');
+ if(!base){$('studyOut').textContent='Set your backend URL in Settings first.';return;}
+ $('studyOut').textContent='Thinking...';
+ try{
+  const r=await fetch(base.replace(/\/$/,'')+'/api/study',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,format})});
+  const d=await r.json(); $('studyOut').textContent=d.reply||d.error||'No response.';
+ }catch(e){$('studyOut').textContent='Backend connection failed.';}
+}
+function preview(input){const f=input.files[0];if(f){$('preview').src=URL.createObjectURL(f);$('preview').style.display='block';}}
+function photo(x){alert(x+' selected. Real image editing will be connected in the next version.');}
+function tool(x){alert(x+' selected. This tool will be connected to the AI backend.');}
+function calculator(){const x=prompt('Enter a basic calculation, e.g. 25*4+10');if(!x)return;if(!/^[0-9+*/().% -]+$/.test(x)){alert('Only basic calculations are allowed.');return}try{alert('Answer: '+Function('"use strict";return ('+x+')')());}catch(e){alert('Invalid calculation.');}}
+function saveBackend(){const u=$('backendUrl').value.trim();localStorage.setItem('lifeai_backend',u);alert('Backend URL saved.');}
+renderChat();
+</script>
+</body>
+</html>
