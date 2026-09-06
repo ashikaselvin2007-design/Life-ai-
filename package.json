@@ -1,0 +1,13 @@
+{
+  "name": "life-ai",
+  "version": "1.0.0",
+  "description": "Life AI backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "openai": "^6.0.0"
+  }
+}
