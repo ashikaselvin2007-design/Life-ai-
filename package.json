@@ -1,0 +1,12 @@
+{
+  "name": "life-ai",
+  "version": "1.0.0",
+  "description": "Life AI Assistant App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
